@@ -12,20 +12,20 @@
  *  The variable which is for counting should be defined as 'static'.
  */
 //when occur next exception break,carry out this function again. 
+/*lab4-1(modified)*/
+
 void sched_yield(void)
 {
-	static int pos = -1;
-	while(1){
-		pos = (pos+1)%NENV;
-		/*if(pos==0){
-			printf("is:%d\n",envs[pos].env_status);
-		}*/
-		if(envs[pos].env_status==ENV_RUNNABLE){
-			env_run(&envs[pos]);
-		}
-	}
-
-}
+    static int times = 0, pos = 0;
+    static struct Env *e = NULL;
+    
+    printf("\n\n*********** sched_yield %d begin ***********\n", times);
+    if (times > 0) {
+        --times;
+        printf("-- times, running %x times:%d\n", e->env_id, times);
+        env_run(e);
+        return;
+ 
 /*void sched_yield(void){
 	static int i = -1;
 	int n=0;
