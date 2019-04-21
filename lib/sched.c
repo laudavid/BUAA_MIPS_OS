@@ -14,17 +14,45 @@
 //when occur next exception break,carry out this function again. 
 void sched_yield(void)
 {
-	static int pos = -1;
-	while(1){
-		pos = (pos+1)%NENV;
-		//if(envs[pos].env_id==4097){
-		//	printf("is:%d\n",ENV_RUNNABLE);
-		//}
-		if(envs[pos].env_status==ENV_RUNNABLE){
-			env_run(&envs[pos]);
-		}
-	}
+    static int times = 0, pos = 0;
+    static struct Env *e = NULL;
+    
+    printf("\n\n*********** sched_yield %d begin ***********\n", times);
+    if (times > 0 && e != NULL && e->env_status == ENV_RUNNABLE) {
+        --times;
+        printf("-- times, running %x times:%d\n", e->env_id, times);
+        env_run(e);
+        return;
+    }   
 
+    //if (e == NULL)
+    //    e = LIST_FIRST(&env_sched_list[pos]);
+    //LIST_REMOVE(e, env_sched_link); 
+    if (e != NULL && e->env_status == ENV_RUNNABLE)
+      LIST_INSERT_HEAD(&env_sched_list[pos ^ 1], e, env_sched_link);
+    e = NULL;
+    
+    /* check if current list is empty, switch list on empty */
+    if (LIST_EMPTY(&env_sched_list[pos])) {
+        pos ^= 1;
+        printf("switch to %d\n", pos);
+    }
+    if(!LIST_EMPTY(&env_sched_list[pos])){
+        e = LIST_FIRST(&env_sched_list[pos]);
+        LIST_REMOVE(e, env_sched_link);
+    }
+    if (e == NULL) {
+        printf("env_sched_list[%d] is empty!\n", pos);
+        while(1);   
+    }   
+
+    times = e->env_pri;
+    --times;
+    //printf("test\n");
+    
+    //peek_sched_list(env_sched_list, pos);
+    env_run(e);
+    
 }
 /*void sched_yield(void){
 	static int i = -1;
