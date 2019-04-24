@@ -23,6 +23,7 @@ void sched_yield(void)
 
     if (e != NULL && e->env_status == ENV_RUNNABLE) {
         LIST_INSERT_TAIL(&env_sched_list[pos ^ 1], e, env_sched_link, tmp);
+        //LIST_INSERT_HEAD(&env_sched_list[pos ^ 1], e, env_sched_link);
     }
 
     /* check if current list is empty, switch list on empty */
