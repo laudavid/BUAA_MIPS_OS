@@ -1,0 +1,6 @@
+*.o
+*.b
+*.x
+*~
+*.swp
+vmlinux
