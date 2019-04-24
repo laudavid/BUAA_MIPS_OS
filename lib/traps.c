@@ -3,10 +3,15 @@
 #include <printf.h>
 
 extern void handle_int();
+
 extern void handle_reserved();
+
 extern void handle_tlb();
+
 extern void handle_sys();
+
 extern void handle_mod();
+
 unsigned long exception_handlers[32];
 
 void trap_init()
@@ -23,6 +28,7 @@ void trap_init()
     set_except_vector(3, handle_tlb);
     set_except_vector(8, handle_sys);
 }
+
 void *set_except_vector(int n, void *addr)
 {
     unsigned long handler = (unsigned long)addr;
@@ -54,14 +60,13 @@ page_fault_handler(struct Trapframe *tf)
 
     bcopy(tf, &PgTrapFrame, sizeof(struct Trapframe));
 
-    if (tf->regs[29] >= (curenv->env_xstacktop - BY2PG) &&
-        tf->regs[29] <= (curenv->env_xstacktop - 1)) {
-            tf->regs[29] = tf->regs[29] - sizeof(struct  Trapframe);
-            bcopy(&PgTrapFrame, (void *)tf->regs[29], sizeof(struct Trapframe));
-        } else {
-            tf->regs[29] = curenv->env_xstacktop - sizeof(struct  Trapframe);
-            bcopy(&PgTrapFrame,(void *)curenv->env_xstacktop - sizeof(struct  Trapframe),sizeof(struct Trapframe));
-        }
+    if (tf->regs[29] >= (curenv->env_xstacktop - BY2PG) && tf->regs[29] <= (curenv->env_xstacktop - 1)) {
+        tf->regs[29] = tf->regs[29] - sizeof(struct Trapframe);
+        bcopy(&PgTrapFrame, (void *)tf->regs[29], sizeof(struct Trapframe));
+    } else {
+        tf->regs[29] = curenv->env_xstacktop - sizeof(struct Trapframe);
+        bcopy(&PgTrapFrame, (void *)curenv->env_xstacktop - sizeof(struct Trapframe), sizeof(struct Trapframe));
+    }
 
     tf->cp0_epc = curenv->env_pgfault_handler;
 

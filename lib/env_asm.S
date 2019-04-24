@@ -25,10 +25,10 @@ LEAF(env_pop_tf)
     xori	t0,0x3                          
     mtc0	t0,CP0_STATUS                    
 
-lw	v1,TF_LO(k0)                                       
+    lw	v1,TF_LO(k0)
     mtlo	v1                               
     lw	v0,TF_HI(k0)                     
-lw	v1,TF_EPC(k0)                    
+    lw	v1,TF_EPC(k0)
     mthi	v0                               
     mtc0	v1,CP0_EPC                       
     lw	$31,TF_REG31(k0)                 
@@ -59,11 +59,11 @@ lw	v1,TF_EPC(k0)
     lw	$4,TF_REG4(k0)                   
     lw	$3,TF_REG3(k0)                   
     lw	$2,TF_REG2(k0)                   
-lw	$1,TF_REG1(k0)
+    lw	$1,TF_REG1(k0)
 
-lw	k1,TF_PC(k0)
+    lw	k1,TF_PC(k0)
 
-lw	k0,TF_STATUS(k0)                 
+    lw	k0,TF_STATUS(k0)
     nop					 
     mtc0	k0,CP0_STATUS
 

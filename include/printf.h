@@ -13,6 +13,7 @@
 #define _printf_h_
 
 #include <stdarg.h>
+
 void printf(char *fmt, ...);
 
 void _panic(const char *, int, const char *, ...)

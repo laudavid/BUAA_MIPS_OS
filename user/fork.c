@@ -17,28 +17,28 @@
  */
 void user_bcopy(const void *src, void *dst, size_t len)
 {
-        void *max;
+    void *max;
 
-        //      writef("~~~~~~~~~~~~~~~~ src:%x dst:%x len:%x\n",(int)src,(int)dst,len);
-        max = dst + len;
+    //      writef("~~~~~~~~~~~~~~~~ src:%x dst:%x len:%x\n",(int)src,(int)dst,len);
+    max = dst + len;
 
-        // copy machine words while possible
-        if (((int)src % 4 == 0) && ((int)dst % 4 == 0)) {
-                while (dst + 3 < max) {
-                        *(int *)dst = *(int *)src;
-                        dst += 4;
-                        src += 4;
-                }
+    // copy machine words while possible
+    if (((int)src % 4 == 0) && ((int)dst % 4 == 0)) {
+        while (dst + 3 < max) {
+            *(int *)dst = *(int *)src;
+            dst += 4;
+            src += 4;
         }
+    }
 
-        // finish remaining 0-3 bytes
-        while (dst < max) {
-                *(char *)dst = *(char *)src;
-                dst += 1;
-                src += 1;
-        }
+    // finish remaining 0-3 bytes
+    while (dst < max) {
+        *(char *)dst = *(char *)src;
+        dst += 1;
+        src += 1;
+    }
 
-        //for(;;);
+    //for(;;);
 }
 
 /* Overview:
@@ -54,15 +54,15 @@ void user_bcopy(const void *src, void *dst, size_t len)
  */
 void user_bzero(void *v, u_int n)
 {
-        char *p;
-        int m;
+    char *p;
+    int m;
 
-        p = v;
-        m = n;
+    p = v;
+    m = n;
 
-        while (--m >= 0) {
-                *p++ = 0;
-        }
+    while (--m >= 0) {
+        *p++ = 0;
+    }
 }
 /*--------------------------------------------------------------*/
 
@@ -81,36 +81,36 @@ void user_bzero(void *v, u_int n)
 static void
 pgfault(u_int va)
 {
-        u_int tmp;
-        //      writef("fork.c:pgfault():\t va:%x\n",va);
+    u_int tmp;
+    //      writef("fork.c:pgfault():\t va:%x\n",va);
     va = ROUNDDOWN(va, BY2PG);
-        if (((*vpt)[VPN(va)] & PTE_COW) == 0){
-                 user_panic("pgfault: the page of 'va' is not a PTE_COW page!");
-         return;
+    if (((*vpt)[VPN(va)] & PTE_COW) == 0) {
+        user_panic("pgfault: the page of 'va' is not a PTE_COW page!");
+        return;
     }
     //map the new page at a temporary place
-        tmp = UTEXT-BY2PG;
+    tmp = UTEXT - BY2PG;
     //tmp = UXSTACKTOP-2*BY2PG;
     //tmp = 0x50000000;
-    u_int perm = (*vpt)[VPN(va)]& 0xfff;
-        //if(syscall_mem_alloc(0, tmp, PTE_V|PTE_R) < 0){
-    if(syscall_mem_alloc(0, tmp, perm &(~PTE_COW)) < 0){
-                user_panic("pgfault: sys_mem_alloc failed!");
-        }
+    u_int perm = (*vpt)[VPN(va)] & 0xfff;
+    //if(syscall_mem_alloc(0, tmp, PTE_V|PTE_R) < 0){
+    if (syscall_mem_alloc(0, tmp, perm & (~PTE_COW)) < 0) {
+        user_panic("pgfault: sys_mem_alloc failed!");
+    }
 
-        //copy the content
-        user_bcopy((void *)va, (void *)tmp, BY2PG);
+    //copy the content
+    user_bcopy((void *)va, (void *)tmp, BY2PG);
 
     //map the page on the appropriate place
-        //if(syscall_mem_map(0, tmp, 0, va, PTE_V|PTE_R) < 0){
-    if(syscall_mem_map(0, tmp, 0, va, perm &(~PTE_COW)) < 0){
-                user_panic("pgfault: sys_mem_map failed!");
-        }
+    //if(syscall_mem_map(0, tmp, 0, va, PTE_V|PTE_R) < 0){
+    if (syscall_mem_map(0, tmp, 0, va, perm & (~PTE_COW)) < 0) {
+        user_panic("pgfault: sys_mem_map failed!");
+    }
 
     //unmap the temporary place
-        if(syscall_mem_unmap(0, tmp) < 0){
-                user_panic("pgfault: sys_mem_unmap failed!");
-        }
+    if (syscall_mem_unmap(0, tmp) < 0) {
+        user_panic("pgfault: sys_mem_unmap failed!");
+    }
 
 
 }
@@ -134,36 +134,36 @@ pgfault(u_int va)
 static void
 duppage(u_int envid, u_int pn)
 {
-        u_int addr;
-        u_int perm;
+    u_int addr;
+    u_int perm;
 
-    addr = pn*BY2PG;
-        perm = (*vpt)[pn] & 0xfff;
+    addr = pn * BY2PG;
+    perm = (*vpt)[pn] & 0xfff;
 
 
 
-        //if(((perm & PTE_R) != 0) || ((perm & PTE_COW) != 0)){
-        if((((perm & PTE_R) !=0) || ((perm & PTE_COW)!=0)) && (perm & PTE_V)){
-            //writef("strange va: 0x%x\n",addr);
-            if(perm & PTE_LIBRARY){
-                perm = perm | PTE_V | PTE_R;
-                //perm = perm | PTE_V | PTE_R | PTE_COW;
-            }else{
-                perm = perm | PTE_V | PTE_R | PTE_COW;
-            }
-            if(syscall_mem_map(0, pn*BY2PG, envid, pn*BY2PG, perm) < 0){
-                    user_panic("syscall_mem_map for son failed.\n");
-            }
-            if(syscall_mem_map(0, pn*BY2PG, 0, pn*BY2PG, perm) < 0){
-                    user_panic("syscall_mem_map for father failed.\n");
-            }
-        } else{
-            if(syscall_mem_map(0, pn*BY2PG, envid, pn*BY2PG, perm) < 0){
-                    user_panic("syscall_mem_map for son failed.1\n");
-            }
+    //if(((perm & PTE_R) != 0) || ((perm & PTE_COW) != 0)){
+    if ((((perm & PTE_R) != 0) || ((perm & PTE_COW) != 0)) && (perm & PTE_V)) {
+        //writef("strange va: 0x%x\n",addr);
+        if (perm & PTE_LIBRARY) {
+            perm = perm | PTE_V | PTE_R;
+            //perm = perm | PTE_V | PTE_R | PTE_COW;
+        } else {
+            perm = perm | PTE_V | PTE_R | PTE_COW;
         }
+        if (syscall_mem_map(0, pn * BY2PG, envid, pn * BY2PG, perm) < 0) {
+            user_panic("syscall_mem_map for son failed.\n");
+        }
+        if (syscall_mem_map(0, pn * BY2PG, 0, pn * BY2PG, perm) < 0) {
+            user_panic("syscall_mem_map for father failed.\n");
+        }
+    } else {
+        if (syscall_mem_map(0, pn * BY2PG, envid, pn * BY2PG, perm) < 0) {
+            user_panic("syscall_mem_map for son failed.1\n");
+        }
+    }
 
-        //      user_panic("duppage not implemented");
+    //      user_panic("duppage not implemented");
 
 }
 
@@ -177,18 +177,19 @@ duppage(u_int envid, u_int pn)
  *       `syscall_set_pgfault_handler`.
  */
 extern void __asm_pgfault_handler(void);
+
 int
 fork(void)
 {
-        // Your code here.
-        u_int newenvid;
-        extern struct Env *envs;
-        extern struct Env *env;
-        u_int i;
+    // Your code here.
+    u_int newenvid;
+    extern struct Env *envs;
+    extern struct Env *env;
+    u_int i;
 
 
-        //The parent installs pgfault using set_pgfault_handler
-        set_pgfault_handler(pgfault);
+    //The parent installs pgfault using set_pgfault_handler
+    set_pgfault_handler(pgfault);
 
 
     //alloc a new alloc
@@ -198,40 +199,40 @@ fork(void)
         return newenvid;
     }
 
-    if (newenvid==0) {
+    if (newenvid == 0) {
         env = &envs[ENVX(syscall_getenvid())];
         return 0;
     }
 
 
     //for(i=0; i<UTOP-BY2PG; i+=BY2PG){
-    for(i=0;i<UTOP-2*BY2PG;i+=BY2PG){
-                if(((*vpd)[VPN(i)/1024])!=0 && ((*vpt)[VPN(i)])!=0){
-                        duppage(newenvid,VPN(i));
-                }
+    for (i = 0; i < UTOP - 2 * BY2PG; i += BY2PG) {
+        if (((*vpd)[VPN(i) / 1024]) != 0 && ((*vpt)[VPN(i)]) != 0) {
+            duppage(newenvid, VPN(i));
         }
+    }
 
-    if(syscall_mem_alloc(newenvid, UXSTACKTOP-BY2PG, PTE_V|PTE_R) < 0){
-    //if(syscall_mem_alloc(newenvid, UXSTACKTOP-BY2PG, PTE_V|PTE_R|PTE_LIBRARY) < 0){
+    if (syscall_mem_alloc(newenvid, UXSTACKTOP - BY2PG, PTE_V | PTE_R) < 0) {
+        //if(syscall_mem_alloc(newenvid, UXSTACKTOP-BY2PG, PTE_V|PTE_R|PTE_LIBRARY) < 0){
         user_panic("fork: alloc UXSTACK error.\n");
     }
 
-    if(syscall_set_pgfault_handler(newenvid, __asm_pgfault_handler, UXSTACKTOP) < 0){
+    if (syscall_set_pgfault_handler(newenvid, __asm_pgfault_handler, UXSTACKTOP) < 0) {
         user_panic("fork: page fault handler setup failed.\n");
     }
 
-    if(syscall_set_env_status(newenvid, ENV_RUNNABLE) < 0) {
+    if (syscall_set_env_status(newenvid, ENV_RUNNABLE) < 0) {
         user_panic("fork: syscall_set_env_status failed!");
     }
 
 
-        return newenvid;
+    return newenvid;
 }
 
 // Challenge!
 int
 sfork(void)
 {
-        user_panic("sfork not implemented");
-        return -E_INVAL;
+    user_panic("sfork not implemented");
+    return -E_INVAL;
 }

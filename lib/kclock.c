@@ -17,6 +17,6 @@ extern void set_timer();
 void
 kclock_init(void)
 {
-	/* initialize 8253 clock to interrupt 100 times/sec */
-	set_timer();
+    /* initialize 8253 clock to interrupt 100 times/sec */
+    set_timer();
 }
