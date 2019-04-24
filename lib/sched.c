@@ -14,14 +14,16 @@ void sched_yield(void)
 {
     static int times = 0, pos = 0;
     static struct Env *e = NULL;
+    struct Env *tmp;
 
     if (--times > 0 && e != NULL && e->env_status == ENV_RUNNABLE) {
         env_run(e);
         return;
     }
 
-    if (e != NULL && e->env_status == ENV_RUNNABLE)
-        LIST_INSERT_HEAD(&env_sched_list[pos ^ 1], e, env_sched_link);
+    if (e != NULL && e->env_status == ENV_RUNNABLE) {
+        LIST_INSERT_TAIL(&env_sched_list[pos ^ 1], e, env_sched_link, tmp);
+    }
 
     /* check if current list is empty, switch list on empty */
     if (LIST_EMPTY(&env_sched_list[pos])) {
