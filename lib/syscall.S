@@ -11,7 +11,7 @@ NESTED(handle_sys,TF_SIZE, sp)
     .set at                             // Resume use of $at
 
     // TODO: Fetch EPC from Trapframe, calculate a proper value and store it back to trapframe.
-    lw      t1,TF_EPC(sp)
+    lw      t1, TF_EPC(sp)
     addiu   t1, 4
     sw      t1, TF_EPC(sp)
 
@@ -24,17 +24,17 @@ NESTED(handle_sys,TF_SIZE, sp)
     addu    t1, t1, t0                  // t1 <- table entry of specific syscall
     lw      t2, 0(t1)                   // t2 <- function entry of specific syscall
 
-    lw      t0, TF_REG29(sp)            // t0 <- user's stack pointer
+    lw      t0, TF_REG29(sp)            // t0 <- user''s stack pointer
     lw      t3, 16(t0)                  // t3 <- the 5th argument of msyscall
     lw      t4, 20(t0)                  // t4 <- the 6th argument of msyscall
 
     // TODO: Allocate a space of six arguments on current kernel stack and copy the six arguments to proper location
     lw      a0, TF_REG4(sp)
-    lw          a1, TF_REG5(sp)
+    lw      a1, TF_REG5(sp)
     lw      a2, TF_REG6(sp)
     lw      a3, TF_REG7(sp)
-    subu        sp, 24
-    sw          a0, 0(sp)
+    subu    sp, 24
+    sw      a0, 0(sp)
     sw      a1, 4(sp)
     sw      a2, 8(sp)
     sw      a3, 12(sp)
@@ -46,7 +46,7 @@ NESTED(handle_sys,TF_SIZE, sp)
     nop
 
     // TODO: Resume current kernel stack
-    addu        sp, 24
+    addu    sp, 24
 
     sw      v0, TF_REG2(sp)             // Store return value of function sys_* (in $v0) into trapframe
 

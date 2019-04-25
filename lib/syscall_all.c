@@ -1,8 +1,8 @@
 #include "../drivers/gxconsole/dev_cons.h"
-#include <mmu.h>
 #include <env.h>
-#include <printf.h>
+#include <mmu.h>
 #include <pmap.h>
+#include <printf.h>
 #include <sched.h>
 
 extern char *KERNEL_SP;
@@ -67,7 +67,6 @@ void sys_yield(void)
     struct Trapframe *dst = (struct Trapframe *)(TIMESTACK - sizeof(struct Trapframe));
     bcopy((void *)src, (void *)dst, sizeof(struct Trapframe));
     sched_yield();
-
 }
 
 /* Overview:
@@ -253,7 +252,6 @@ int sys_mem_unmap(int sysno, u_int envid, u_int va)
     // Your code here.
     int ret;
     struct Env *env;
-
 
     if (va >= UTOP) {
         return -E_INVAL;
@@ -460,4 +458,3 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 
     return 0;
 }
-

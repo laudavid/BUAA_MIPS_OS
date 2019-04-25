@@ -5,8 +5,8 @@
  */
 
 #include <kerelf.h>
-#include <types.h>
 #include <pmap.h>
+#include <types.h>
 
 /* Overview:
  *   Check whether it is a ELF file.

@@ -1,15 +1,11 @@
-#include <trap.h>
 #include <env.h>
 #include <printf.h>
+#include <trap.h>
 
 extern void handle_int();
-
 extern void handle_reserved();
-
 extern void handle_tlb();
-
 extern void handle_sys();
-
 extern void handle_mod();
 
 unsigned long exception_handlers[32];
@@ -37,7 +33,6 @@ void *set_except_vector(int n, void *addr)
     return (void *)old_handler;
 }
 
-
 struct pgfault_trap_frame {
     u_int fault_va;
     u_int err;
@@ -51,9 +46,7 @@ struct pgfault_trap_frame {
     u_int empty5;
 };
 
-
-void
-page_fault_handler(struct Trapframe *tf)
+void page_fault_handler(struct Trapframe *tf)
 {
     struct Trapframe PgTrapFrame;
     extern struct Env *curenv;

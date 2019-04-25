@@ -9,11 +9,11 @@
  *
  */
 
-#include    <print.h>
+#include <print.h>
 
 /* macros */
-#define        IsDigit(x)    ( ((x) >= '0') && ((x) <= '9') )
-#define        Ctod(x)        ( (x) - '0')
+#define IsDigit(x) (((x) >= '0') && ((x) <= '9'))
+#define Ctod(x) ((x) - '0')
 
 /* forward declaration */
 extern int PrintChar(char *, char, int, int);
@@ -28,19 +28,21 @@ static const char theFatalMsg[] = "fatal error in lp_Print!";
 /* -*-
  * A low level printf() function.
  */
-void
-lp_Print(void (*output)(void *, char *, int),
-         void *arg,
-         char *fmt,
-         va_list ap)
+void lp_Print(void (*output)(void *, char *, int),
+              void *arg,
+              char *fmt,
+              va_list ap)
 {
 
-#define    OUTPUT(arg, s, l)  \
-{ if (((l) < 0) || ((l) > LP_MAX_BUF)) { \
-            (*output)(arg, (char*)theFatalMsg, sizeof(theFatalMsg)-1); for(;;); \
-        } else { \
-            (*output)(arg, s, l); \
-        } \
+#define OUTPUT(arg, s, l)                                                 \
+    {                                                                     \
+        if (((l) < 0) || ((l) > LP_MAX_BUF)) {                            \
+            (*output)(arg, (char *)theFatalMsg, sizeof(theFatalMsg) - 1); \
+            for (;;)                                                      \
+                ;                                                         \
+        } else {                                                          \
+            (*output)(arg, s, l);                                         \
+        }                                                                 \
     }
 
     char buf[LP_MAX_BUF];
@@ -121,131 +123,114 @@ lp_Print(void (*output)(void *, char *, int),
             }
         }
 
-
         /* check format flag */
         negFlag = 0;
 
         switch (*fmt) {
-            case 'b':
-                if (longFlag) {
-                    num = va_arg(ap,
-                    long int);
-                } else {
-                    num = va_arg(ap,
-                    int);
-                }
+        case 'b':
+            if (longFlag) {
+                num = va_arg(ap, long int);
+            } else {
+                num = va_arg(ap, int);
+            }
 
-                length = PrintNum(buf, num, 2, 0, width, ladjust, padc, 0);
-                OUTPUT(arg, buf, length);
-                break;
+            length = PrintNum(buf, num, 2, 0, width, ladjust, padc, 0);
+            OUTPUT(arg, buf, length);
+            break;
 
-            case 'd':
-            case 'D':
-                if (longFlag) {
-                    num = va_arg(ap,
-                    long int);
-                } else {
-                    num = va_arg(ap,
-                    int);
-                }
+        case 'd':
+        case 'D':
+            if (longFlag) {
+                num = va_arg(ap, long int);
+            } else {
+                num = va_arg(ap, int);
+            }
 
-                if (num < 0) {
-                    num = -num;
-                    negFlag = 1;
-                }
+            if (num < 0) {
+                num = -num;
+                negFlag = 1;
+            }
 
-                length = PrintNum(buf, num, 10, negFlag, width, ladjust, padc, 0);
-                OUTPUT(arg, buf, length);
-                break;
+            length = PrintNum(buf, num, 10, negFlag, width, ladjust, padc, 0);
+            OUTPUT(arg, buf, length);
+            break;
 
-            case 'o':
-            case 'O':
-                if (longFlag) {
-                    num = va_arg(ap,
-                    long int);
-                } else {
-                    num = va_arg(ap,
-                    int);
-                }
+        case 'o':
+        case 'O':
+            if (longFlag) {
+                num = va_arg(ap, long int);
+            } else {
+                num = va_arg(ap, int);
+            }
 
-                length = PrintNum(buf, num, 8, 0, width, ladjust, padc, 0);
-                OUTPUT(arg, buf, length);
-                break;
+            length = PrintNum(buf, num, 8, 0, width, ladjust, padc, 0);
+            OUTPUT(arg, buf, length);
+            break;
 
-            case 'u':
-            case 'U':
-                if (longFlag) {
-                    num = va_arg(ap,
-                    long int);
-                } else {
-                    num = va_arg(ap,
-                    int);
-                }
+        case 'u':
+        case 'U':
+            if (longFlag) {
+                num = va_arg(ap, long int);
+            } else {
+                num = va_arg(ap, int);
+            }
 
-                length = PrintNum(buf, num, 10, 0, width, ladjust, padc, 0);
-                OUTPUT(arg, buf, length);
-                break;
+            length = PrintNum(buf, num, 10, 0, width, ladjust, padc, 0);
+            OUTPUT(arg, buf, length);
+            break;
 
-            case 'x':
-                if (longFlag) {
-                    num = va_arg(ap,
-                    long int);
-                } else {
-                    num = va_arg(ap,
-                    int);
-                }
+        case 'x':
+            if (longFlag) {
+                num = va_arg(ap, long int);
+            } else {
+                num = va_arg(ap, int);
+            }
 
-                length = PrintNum(buf, num, 16, 0, width, ladjust, padc, 0);
-                OUTPUT(arg, buf, length);
-                break;
+            length = PrintNum(buf, num, 16, 0, width, ladjust, padc, 0);
+            OUTPUT(arg, buf, length);
+            break;
 
-            case 'X':
-                if (longFlag) {
-                    num = va_arg(ap,
-                    long int);
-                } else {
-                    num = va_arg(ap,
-                    int);
-                }
+        case 'X':
+            if (longFlag) {
+                num = va_arg(ap, long int);
+            } else {
+                num = va_arg(ap, int);
+            }
 
-                length = PrintNum(buf, num, 16, 0, width, ladjust, padc, 1);
-                OUTPUT(arg, buf, length);
-                break;
+            length = PrintNum(buf, num, 16, 0, width, ladjust, padc, 1);
+            OUTPUT(arg, buf, length);
+            break;
 
-            case 'c':
-                c = (char)va_arg(ap,
-                int);
-                length = PrintChar(buf, c, width, ladjust);
-                OUTPUT(arg, buf, length);
-                break;
+        case 'c':
+            c = (char)va_arg(ap, int);
+            length = PrintChar(buf, c, width, ladjust);
+            OUTPUT(arg, buf, length);
+            break;
 
-            case 's':
-                s = (char *)va_arg(ap,
-                char *);
-                length = PrintString(buf, s, width, ladjust);
-                OUTPUT(arg, buf, length);
-                break;
+        case 's':
+            s = (char *)va_arg(ap, char *);
+            length = PrintString(buf, s, width, ladjust);
+            OUTPUT(arg, buf, length);
+            break;
 
-            case '\0':
-                fmt--;
-                break;
+        case '\0':
+            fmt--;
+            break;
 
-            default:
-                /* output this char as it is */
+        default:
+            /* output this char as it is */
             OUTPUT(arg, fmt, 1);
-        }    /* switch (*fmt) */
+        } /* switch (*fmt) */
 
         fmt++;
-    }        /* for(;;) */
+    } /* for(;;) */
 
     /* special termination call */
     OUTPUT(arg, "\0", 1);
 }
 
-
 /* --------------- local help functions --------------------- */
-int
-PrintChar(char *buf, char c, int length, int ladjust)
+int PrintChar(char *buf, char c, int length, int ladjust)
 {
     int i;
 
@@ -270,8 +255,7 @@ PrintChar(char *buf, char c, int length, int ladjust)
     return length;
 }
 
-int
-PrintString(char *buf, char *s, int length, int ladjust)
+int PrintString(char *buf, char *s, int length, int ladjust)
 {
     int i;
     int len = 0;
@@ -306,9 +290,8 @@ PrintString(char *buf, char *s, int length, int ladjust)
     return length;
 }
 
-int
-PrintNum(char *buf, unsigned long u, int base, int negFlag,
-         int length, int ladjust, char padc, int upcase)
+int PrintNum(char *buf, unsigned long u, int base, int negFlag,
+             int length, int ladjust, char padc, int upcase)
 {
     /* algorithm :
      *  1. prints the number from left to right in reverse form.
@@ -365,7 +348,6 @@ PrintNum(char *buf, unsigned long u, int base, int negFlag,
             buf[i] = padc;
         }
     }
-
 
     /* prepare to reverse the string */
     {
