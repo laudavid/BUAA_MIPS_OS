@@ -1,17 +1,16 @@
 #ifndef _PMAP_H_
 #define _PMAP_H_
 
-#include "types.h"
-#include "queue.h"
 #include "mmu.h"
 #include "printf.h"
-
+#include "queue.h"
+#include "types.h"
 
 LIST_HEAD(Page_list, Page);
 typedef LIST_ENTRY(Page) Page_LIST_entry_t;
 
 struct Page {
-    Page_LIST_entry_t pp_link;    /* free list link */
+    Page_LIST_entry_t pp_link; /* free list link */
 
     // Ref is the count of pointers (usually in page table entries)
     // to this page.  This only holds for pages allocated using
@@ -79,11 +78,9 @@ va2pa(Pde *pgdir, u_long va)
 }
 
 /********** functions for memory management(see implementation in mm/pmap.c). ***********/
-
 void mips_detect_memory();
-
+void boot_map_segment(Pde *pgdir, u_long va, u_long size, u_long pa, int perm);
 void mips_vm_init();
-
 void mips_init();
 void page_init(void);
 void page_check();
@@ -96,9 +93,6 @@ struct Page *page_lookup(Pde *pgdir, u_long va, Pte **ppte);
 void page_remove(Pde *pgdir, u_long va);
 void tlb_invalidate(Pde *pgdir, u_long va);
 
-void boot_map_segment(Pde *pgdir, u_long va, u_long size, u_long pa, int perm);
-
 extern struct Page *pages;
-
 
 #endif /* _PMAP_H_ */

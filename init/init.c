@@ -1,8 +1,8 @@
 #include <asm/asm.h>
-#include <pmap.h>
 #include <env.h>
-#include <printf.h>
 #include <kclock.h>
+#include <pmap.h>
+#include <printf.h>
 #include <trap.h>
 
 void mips_init()
@@ -14,16 +14,18 @@ void mips_init()
     page_init();
     env_init();
 
+    //physical_memory_manage_check();
+    //page_check();
+    //env_check();
 
     /*you can create some processes(env) here. in terms of binary code, please refer current directory/code_a.c
      * code_b.c*/
     /*you may want to create process by MACRO, please read env.h file, in which you will find it. this MACRO is very
      * interesting, have fun please*/
-    /*		
-		ENV_CREATE(user_A);
-		ENV_CREATE(user_B);
-		printf("OK,envA and envB create success!\n");
-	*/
+
+    //ENV_CREATE(user_A);
+    //ENV_CREATE(user_B);
+
     //ENV_CREATE(user_fktest);
     ENV_CREATE(user_pingpong);
     trap_init();
@@ -72,5 +74,4 @@ void bzero(void *b, size_t len)
     while (b < max) {
         *(char *)b++ = 0;
     }
-
 }
