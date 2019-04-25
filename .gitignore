@@ -5,3 +5,5 @@
 *.swp
 vmlinux
 .idea
+.vscode
+CMakeLists.txt
