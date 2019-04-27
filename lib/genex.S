@@ -72,6 +72,8 @@ timer_irq:
 
 
 LEAF(do_reserved)
+1:  j 1b
+    nop
 END(do_reserved)
 
 

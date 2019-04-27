@@ -300,7 +300,7 @@ int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
             return -E_NO_MEM;
         }
         pgtable = (Pte *)page2kva(ppage);
-        *pgdir_entryp = PADDR(pgtable) | PTE_V | PTE_R;
+        *pgdir_entryp = PADDR(pgtable) | PTE_V;
         ppage->pp_ref = 1;
     }
 
@@ -582,6 +582,15 @@ void page_check(void)
     page_free(pp0);
     page_free(pp1);
     page_free(pp2);
+
+    u_long *va = 0x12450;
+    u_long *pa;
+    page_insert(boot_pgdir, pp, va, PTE_R);
+    pa = va2pa(boot_pgdir, va);
+    printf("va: %x -> pa: %x\n", va, pa);
+    *va = 0x88888;
+    printf("va value: %x\n", *va);
+    printf("pa value: %x\n", *((u_long *)((u_long)pa + (u_long)ULIM)));
 
     printf("page_check() succeeded!\n");
 }

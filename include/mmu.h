@@ -51,7 +51,7 @@
  o                      |   Interrupts & Exception   |  kseg1
  o                      +----------------------------+------------0xa000 0000
  o                      |      Invalid memory        |   /|\
- o                      +----------------------------+----|-------0x8400 0000-------Physics Memory Max
+ o                      +----------------------------+----|-------0x8400 0000-Physics Memory Max
  o                      |       ...                  |  kseg0
  o  VPT,KSTACKTOP-----> +----------------------------+----|-------0x8040 0000-------end
  o                      |       Kernel Stack         |    | KSTKSIZE            /|\

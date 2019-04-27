@@ -154,7 +154,7 @@ env_setup_vm(struct Env *e)
     /*VPT and UVPT map the env's own page table, with
      *different permissions. */
     e->env_pgdir[PDX(VPT)] = e->env_cr3;
-    e->env_pgdir[PDX(UVPT)] = e->env_cr3 | PTE_V | PTE_R;
+    e->env_pgdir[PDX(UVPT)] = e->env_cr3 | PTE_V;
     return 0;
 }
 

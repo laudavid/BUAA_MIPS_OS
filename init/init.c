@@ -15,7 +15,7 @@ void mips_init()
     env_init();
 
     //physical_memory_manage_check();
-    //page_check();
+    
     //env_check();
 
     /*you can create some processes(env) here. in terms of binary code, please refer current directory/code_a.c
@@ -30,6 +30,7 @@ void mips_init()
     ENV_CREATE(user_pingpong);
     trap_init();
     kclock_init();
+    //page_check();
     panic("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
     while (1);
     panic("init.c:\tend of mips_init() reached!");

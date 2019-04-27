@@ -138,10 +138,12 @@ duppage(u_int envid, u_int pn)
     u_int perm;
 
     addr = pn * BY2PG;
+    
+    //writef("before:%08x,addr:%08x\n",(*vpt)[pn], &((*vpt)[pn]));
+    //(*vpt)[pn] &= ~PTE_R;
+    //writef("after:%08x,addr:%08x\n",(*vpt)[pn], &((*vpt)[pn]));
+    
     perm = (*vpt)[pn] & 0xfff;
-
-
-
     //if(((perm & PTE_R) != 0) || ((perm & PTE_COW) != 0)){
     if ((((perm & PTE_R) != 0) || ((perm & PTE_COW) != 0)) && (perm & PTE_V)) {
         //writef("strange va: 0x%x\n",addr);
@@ -162,7 +164,7 @@ duppage(u_int envid, u_int pn)
             user_panic("syscall_mem_map for son failed.1\n");
         }
     }
-
+    
     //      user_panic("duppage not implemented");
 
 }
@@ -189,7 +191,7 @@ fork(void)
 
 
     //The parent installs pgfault using set_pgfault_handler
-    set_pgfault_handler(pgfault);
+    //set_pgfault_handler(pgfault);
 
 
     //alloc a new alloc
@@ -204,6 +206,7 @@ fork(void)
         return 0;
     }
 
+    set_pgfault_handler(pgfault);
 
     //for(i=0; i<UTOP-BY2PG; i+=BY2PG){
     for (i = 0; i < UTOP - 2 * BY2PG; i += BY2PG) {
@@ -211,6 +214,8 @@ fork(void)
             duppage(newenvid, VPN(i));
         }
     }
+
+    
 
     if (syscall_mem_alloc(newenvid, UXSTACKTOP - BY2PG, PTE_V | PTE_R) < 0) {
         //if(syscall_mem_alloc(newenvid, UXSTACKTOP-BY2PG, PTE_V|PTE_R|PTE_LIBRARY) < 0){
