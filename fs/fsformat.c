@@ -121,8 +121,8 @@ void init_disk()
     for (i = 0; i < nbitblock; ++i) {
         memset(disk[2 + i].data, 0xff, NBLOCK / 8);
     }
-    if (NBLOCK != nbitblock * BY2BLK) {
-        diff = NBLOCK % BY2BLK / 8;
+    if (NBLOCK != nbitblock * BIT2BLK) {
+        diff = NBLOCK % BIT2BLK / 8;
         memset(disk[2 + (nbitblock - 1)].data + diff, 0x00, BY2BLK - diff);
     }
 
