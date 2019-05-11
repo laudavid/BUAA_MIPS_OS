@@ -4,6 +4,8 @@
 *~
 *.swp
 vmlinux
+fsformat
+fs.img
 .idea
 .vscode
 CMakeLists.txt

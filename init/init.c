@@ -25,8 +25,8 @@ void mips_init()
 
     //ENV_CREATE(user_A);
     //ENV_CREATE(user_B);
-    ENV_CREATE(fs_serv);
     ENV_CREATE(user_fstest);
+    ENV_CREATE(fs_serv);
     //ENV_CREATE(user_fktest);
     //ENV_CREATE(user_pingpong);
 

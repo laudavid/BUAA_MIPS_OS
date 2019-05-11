@@ -69,6 +69,6 @@ fs.img: $(FSIMGFILES)
 .PHONY: clean
 
 clean:
-	rm -rf *~ *.o *.b.c *.b *.x
+	rm -rf *~ *.o *.b.c *.b *.x fsformat
 
 include ../include.mk
