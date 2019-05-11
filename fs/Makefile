@@ -25,7 +25,6 @@ USERLIB := ../user/printf.o \
 
 FSLIB :=	fs.o \
 		ide.o \
-		ide_asm.o \
 		test.o
 
 FSIMGFILES := motd newmotd

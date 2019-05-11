@@ -37,6 +37,14 @@ void *memcpy(void *destaddr, void const *srcaddr, u_int len)
     char *dest = destaddr;
     char const *src = srcaddr;
 
+    //add
+    while (len >= 4) {
+        *(int *)dest = *(int *)src;
+        dest += 4;
+        src += 4;
+        len -= 4;
+    }
+
     while (len-- > 0) {
         *dest++ = *src++;
     }
@@ -167,10 +175,9 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
         return ret;
     }
 
-    ppage->pp_ref++;
+    ppage->pp_ref++; //是否需要++，在page_insert函数将物理页映射到va时已经++。
 
     if ((ret = page_insert(env->env_pgdir, ppage, va, perm)) < 0) {
-        //page_free(ppage);
         return ret;
     }
 
@@ -224,11 +231,12 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
     }
 
     if ((ppage = page_lookup(srcenv->env_pgdir, round_srcva, &ppte)) == 0) {
-        return -E_UNSPECIFIED;
+        return -E_INVAL;
     }
 
+    //can't go from non-writable to writable
     if ((ppte != NULL) && !(*ppte & PTE_R) && (perm & PTE_R)) {
-        return -E_UNSPECIFIED;
+        return -E_INVAL;
     }
 
     if ((ret = page_insert(dstenv->env_pgdir, ppage, round_dstva, perm)) < 0) {
@@ -265,7 +273,7 @@ int sys_mem_unmap(int sysno, u_int envid, u_int va)
     page_remove(env->env_pgdir, va);
 
     return 0;
-    //      panic("sys_mem_unmap not implemented");
+    //panic("sys_mem_unmap not implemented");
 }
 
 /* Overview:
@@ -419,7 +427,6 @@ void sys_ipc_recv(int sysno, u_int dstva)
 int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
                      u_int perm)
 {
-
     int r;
     struct Env *e;
     struct Page *p;
@@ -440,7 +447,7 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
         //if (srcva != 0 && e->env_ipc_dstva != 0) {
 
         if ((p = page_lookup(curenv->env_pgdir, srcva, &ppte)) == 0) {
-            return -E_UNSPECIFIED;
+            return -E_INVAL;
         }
 
         if ((r = page_insert(e->env_pgdir, p, e->env_ipc_dstva, perm)) < 0) {
@@ -451,10 +458,79 @@ int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 
     e->env_ipc_recving = 0;
     e->env_status = ENV_RUNNABLE;
-    LIST_INSERT_HEAD(env_sched_list, e, env_sched_link);
+    LIST_INSERT_HEAD(&env_sched_list[0], e, env_sched_link);
+    //printf("insert : %x\n",envid);
 
     e->env_ipc_value = value;
     e->env_ipc_from = curenv->env_id;
 
+    return 0;
+}
+
+/* Overview:
+ *      This function is used to write data to device, which is
+ *      represented by its mapped physical address.
+ *
+ * Pre-Condition:
+ *      'va' is the startting address of source data, 'offset' is the
+ *      length of data (in bytes), 'dev' is the physical address of
+ *      the device
+ *
+ * Post-Condition:
+ *      copy data from 'va' to 'dev' with length 'offset'
+ *      Return 0 on success, < 0 on error
+ *
+ * Hint: use ummapped segment in kernel address space to perform MMIO
+ */
+int sys_write_dev(int sysno, u_int va, u_int dev, u_int offset)
+{
+    struct Page *ppage;
+    Pte *ppte;
+
+    if ((ppage = page_lookup(curenv->env_pgdir, va, &ppte)) == 0) {
+        return -E_INVAL;
+    }
+
+    void *dst = (void *)(dev + 0xA0000000);
+    bcopy((void *)va, dst, offset);
+
+    //void *kva = (void *)(page2kva(ppage)+va-ROUNDDOWN(va, BY2PG));
+    //printf("va:0x%x kva:0x%x\n", va, kva);
+    //bcopy(kva, dst, offset);
+    //memcpy(dst, va, offset);
+    return 0;
+}
+
+/* Overview:
+ *      This function is used to read data from device, which is
+ *      represented by its mapped physical address.
+ *
+ * Pre-Condition:
+ *      'va' is the startting address of data buffer, 'offset' is the
+ *      length of data (in bytes), 'dev' is the physical address of
+ *      the device
+ *
+ * Post-Condition:
+ *      copy data from 'dev' to 'va' with length 'offset'
+ *      Return 0 on success, < 0 on error
+ *
+ * Hint: use ummapped segment in kernel address space to perform MMIO
+ */
+int sys_read_dev(int sysno, u_int va, u_int dev, u_int offset)
+{
+    struct Page *ppage;
+    Pte *ppte;
+
+    if ((ppage = page_lookup(curenv->env_pgdir, va, &ppte)) == 0) {
+        return -E_INVAL;
+    }
+
+    void *src = (void *)(dev + 0xA0000000);
+    bcopy(src, (void *)va, offset);
+
+    //void *kva = (void *)(page2kva(ppage)+va-ROUNDDOWN(va, BY2PG));
+    //printf("va:0x%x kva:0x%x\n", va, kva);
+    //bcopy(src, kva, offset);
+    //memcpy(va, src, offset);
     return 0;
 }
