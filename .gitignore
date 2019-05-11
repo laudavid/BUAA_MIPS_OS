@@ -1,0 +1,9 @@
+*.o
+*.b
+*.x
+*~
+*.swp
+vmlinux
+.idea
+.vscode
+CMakeLists.txt

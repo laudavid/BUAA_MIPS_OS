@@ -1,7 +1,6 @@
 /* The run time clock is hard-wired to IRQ8. */
 #include <kclock.h>
 
-
 extern void set_timer();
 
 //Overview:
@@ -14,9 +13,8 @@ extern void set_timer();
 //Post-condition:
 //You can't run any env directly before this being executed.
 
-void
-kclock_init(void)
+void kclock_init(void)
 {
-	/* initialize 8253 clock to interrupt 100 times/sec */
-	set_timer();
+    /* initialize 8253 clock to interrupt 100 times/sec */
+    set_timer();
 }

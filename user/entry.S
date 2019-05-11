@@ -32,7 +32,7 @@ vpd:
 	.word (UVPT+(UVPT>>12)*4)
 
 	.globl __pgfault_handler
-	__pgfault_handler:
+__pgfault_handler:
 	.word 0
 
 
