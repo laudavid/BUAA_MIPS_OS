@@ -7,18 +7,18 @@
 extern u_char fsipcbuf[BY2PG]; // page-aligned, declared in entry.S
 
 // Overview:
-//	Send an IPC request to the file server, and wait for a reply.
+//      Send an IPC request to the file server, and wait for a reply.
 //
 // Parameters:
-//	@type: request code, passed as the simple integer IPC value.
-// 	@fsreq: page to send containing additional request data, usually fsipcbuf.
-//		Can be modified by server to return additional response info.
-// 	@dstva: virtual address at which to receive reply page, 0 if none.
-// 	@*perm: permissions of received page.
+//      @type: request code, passed as the simple integer IPC value.
+//      @fsreq: page to send containing additional request data, usually fsipcbuf.
+//              Can be modified by server to return additional response info.
+//      @dstva: virtual address at which to receive reply page, 0 if none.
+//      @*perm: permissions of received page.
 //
 // Returns:
-//	0 if successful,
-//	< 0 on failure.
+//      0 if successful,
+//      < 0 on failure.
 static int
 fsipc(u_int type, void *fsreq, u_int dstva, u_int *perm)
 {
@@ -29,16 +29,17 @@ fsipc(u_int type, void *fsreq, u_int dstva, u_int *perm)
 }
 
 // Overview:
-//	Send file-open request to the file server. Includes path and
-//	omode in request, sets *fileid and *size from reply.
+//      Send file-open request to the file server. Includes path and
+//      omode in request, sets *fileid and *size from reply.
 //
 // Returns:
-//	0 on success,
-//	< 0 on failure.
+//      0 on success,
+//      < 0 on failure.
 int fsipc_open(const char *path, u_int omode, struct Fd *fd)
 {
     u_int perm;
     struct Fsreq_open *req;
+
     req = (struct Fsreq_open *)fsipcbuf;
 
     // The path is too long.
@@ -52,13 +53,13 @@ int fsipc_open(const char *path, u_int omode, struct Fd *fd)
 }
 
 // Overview:
-//	Make a map-block request to the file server. We send the fileid and
-//	the (byte) offset of the desired block in the file, and the server sends
-//	us back a mapping for a page containing that block.
+//      Make a map-block request to the file server. We send the fileid and
+//      the (byte) offset of the desired block in the file, and the server sends
+//      us back a mapping for a page containing that block.
 //
 // Returns:
-//	0 on success,
-//	< 0 on failure.
+//      0 on success,
+//      < 0 on failure.
 int fsipc_map(u_int fileid, u_int offset, u_int dstva)
 {
     int r;
@@ -82,7 +83,7 @@ int fsipc_map(u_int fileid, u_int offset, u_int dstva)
 }
 
 // Overview:
-//	Make a set-file-size request to the file server.
+//      Make a set-file-size request to the file server.
 int fsipc_set_size(u_int fileid, u_int size)
 {
     struct Fsreq_set_size *req;
@@ -94,7 +95,7 @@ int fsipc_set_size(u_int fileid, u_int size)
 }
 
 // Overview:
-//	Make a file-close request to the file server. After this the fileid is invalid.
+//      Make a file-close request to the file server. After this the fileid is invalid.
 int fsipc_close(u_int fileid)
 {
     struct Fsreq_close *req;
@@ -105,7 +106,7 @@ int fsipc_close(u_int fileid)
 }
 
 // Overview:
-//	Ask the file server to mark a particular file block dirty.
+//      Ask the file server to mark a particular file block dirty.
 int fsipc_dirty(u_int fileid, u_int offset)
 {
     struct Fsreq_dirty *req;
@@ -117,7 +118,7 @@ int fsipc_dirty(u_int fileid, u_int offset)
 }
 
 // Overview:
-//	Ask the file server to delete a file, given its pathname.
+//      Ask the file server to delete a file, given its pathname.
 int fsipc_remove(const char *path)
 {
     // Step 1: decide if the path is valid.
@@ -132,8 +133,8 @@ int fsipc_remove(const char *path)
 }
 
 // Overview:
-//	Ask the file server to update the disk by writing any dirty
-//	blocks in the buffer cache.
+//      Ask the file server to update the disk by writing any dirty
+//      blocks in the buffer cache.
 int fsipc_sync(void)
 {
     return fsipc(FSREQ_SYNC, fsipcbuf, 0, 0);

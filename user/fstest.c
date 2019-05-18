@@ -5,62 +5,59 @@ static char *diff_msg = "This is a different massage of the day!\r\n\r\n";
 
 void umain()
 {
-        int r;
-        int fdnum;
-        char buf[512];
-        int n;
-		//writef("&buf:%x,buf:%x\n",&buf,buf);
-        if ((r = open("/newmotd", O_RDWR)) < 0) {
-                user_panic("open /newmotd: %d", r);
-        }
-        fdnum = r;
-        writef("open is good\n");
-		//writef("to check the fdnum's legacy.fdnum is:%d\n",fdnum);
-        if ((n = read(fdnum, buf, 511)) < 0) {
-                user_panic("read /newmotd: %d", r);
-        }
-		//writef("wocao:%s\n",buf);
-        if (strcmp(buf, diff_msg) != 0) {
-                user_panic("read returned wrong data");
-        }
-        writef("read is good\n");
-        if ((r = ftruncate(fdnum, 0)) < 0) {
-                user_panic("ftruncate: %d", r);
-        }
-        seek(fdnum, 0);
-			
-        if ((r = write(fdnum, msg, strlen(msg))) < 0) {
-                user_panic("write /newmotd: %d", r);
-        }
+    int r;
+    int fdnum;
+    char buf[512];
+    int n;
 
-        if ((r = close(fdnum)) < 0) {
-                user_panic("close /newmotd: %d", r);
-        }
+    if ((r = open("/newmotd", O_RDWR)) < 0) {
+        user_panic("open /newmotd: %d", r);
+    }
+    fdnum = r;
+    writef("open is good\n");
 
-        //read again
-        if ((r = open("/newmotd", O_RDONLY)) < 0) {
-                user_panic("open /newmotd: %d", r);
-        }
-        fdnum = r;
-        writef("open again: OK\n");
+    if ((n = read(fdnum, buf, 511)) < 0) {
+        user_panic("read /newmotd: %d", r);
+    }
+    if (strcmp(buf, diff_msg) != 0) {
+        user_panic("read returned wrong data");
+    }
+    writef("read is good\n");
 
-        if ((n = read(fdnum, buf, 511)) < 0) {
-                user_panic("read /newmotd: %d", r);
-        }
-		//writef("wocao %s\n",buf);
-        if (strcmp(buf, msg) != 0) {
-                user_panic("read returned wrong data");
-        }
-        writef("read again: OK\n");
+    if ((r = ftruncate(fdnum, 0)) < 0) {
+        user_panic("ftruncate: %d", r);
+    }
+    seek(fdnum, 0);
 
-        if ((r = close(fdnum)) < 0) {
-                user_panic("close /newmotd: %d", r);
-        }
+    if ((r = write(fdnum, msg, strlen(msg) + 1)) < 0) {
+        user_panic("write /newmotd: %d", r);
+    }
 
-        writef("file rewrite is good\n");
-        while (1) {
-                //writef("IDLE!");
-        }
+    if ((r = close(fdnum)) < 0) {
+        user_panic("close /newmotd: %d", r);
+    }
+
+    //read again
+    if ((r = open("/newmotd", O_RDONLY)) < 0) {
+        user_panic("open /newmotd: %d", r);
+    }
+    fdnum = r;
+    writef("open again: OK\n");
+
+    if ((n = read(fdnum, buf, 511)) < 0) {
+        user_panic("read /newmotd: %d", r);
+    }
+    if (strcmp(buf, msg) != 0) {
+        user_panic("read returned wrong data");
+    }
+    writef("read again: OK\n");
+
+    if ((r = close(fdnum)) < 0) {
+        user_panic("close /newmotd: %d", r);
+    }
+
+    writef("file rewrite is good\n");
+    while (1) {
+        //writef("IDLE!");
+    }
 }
-
-
