@@ -8,12 +8,10 @@
  *  This file is in the public domain.
  */
 
-
-//#define	DEV_CONS_ADDRESS		0x180003f8
-#define DEV_CONS_ADDRESS    0x10000000
-#define DEV_CONS_LENGTH     0x0000000000000020
+//#define DEV_CONS_ADDRESS 0x180003f8
+#define DEV_CONS_ADDRESS 0x10000000
+#define DEV_CONS_LENGTH 0x0000000000000020
 #define DEV_CONS_PUTGETCHAR 0x0000
-#define DEV_CONS_HALT       0x0010
+#define DEV_CONS_HALT 0x0010
 
-
-#endif    /*  TESTMACHINE_CONS_H  */
+#endif /*  TESTMACHINE_CONS_H  */
