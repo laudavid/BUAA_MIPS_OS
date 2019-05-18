@@ -26,7 +26,7 @@ struct Open opentab[MAXOPEN] = {{0, 0, 1}};
 #define REQVA 0x0ffff000
 
 // Overview:
-//	Initialize file system server process.
+//      Initialize file system server process.
 void serve_init(void)
 {
     int i;
@@ -44,7 +44,7 @@ void serve_init(void)
 }
 
 // Overview:
-//	Allocate an open file.
+//      Allocate an open file.
 int open_alloc(struct Open **o)
 {
     int i, r;
@@ -69,7 +69,7 @@ int open_alloc(struct Open **o)
 }
 
 // Overview:
-//	Look up an open file for envid.
+//      Look up an open file for envid.
 int open_lookup(u_int envid, u_int fileid, struct Open **po)
 {
     struct Open *o;
@@ -102,7 +102,7 @@ void serve_open(u_int envid, struct Fsreq_open *rq)
     // Copy in the path, making sure it's null-terminated
     user_bcopy(rq->req_path, path, MAXPATHLEN);
     path[MAXPATHLEN - 1] = 0;
-    //writef("3:filepath:%s\n",path);
+
     // Find a file id.
     if ((r = open_alloc(&o)) < 0) {
         user_panic("open_alloc failed: %d, invalid path: %s", r, path);
@@ -190,7 +190,7 @@ void serve_close(u_int envid, struct Fsreq_close *rq)
 }
 
 // Overview:
-//	fs service used to delete a file according path in `rq`.
+//      fs service used to delete a file according path in `rq`.
 void serve_remove(u_int envid, struct Fsreq_remove *rq)
 {
     int r;
@@ -247,6 +247,7 @@ void serve(void)
             writef("Invalid request from %08x: no argument page\n", whom);
             continue; // just leave it hanging, waiting for the next request.
         }
+
         switch (req) {
         case FSREQ_OPEN:
             serve_open(whom, (struct Fsreq_open *)REQVA);
@@ -290,11 +291,11 @@ void umain(void)
     user_assert(sizeof(struct File) == BY2FILE);
 
     writef("FS is running\n");
-
     writef("FS can do I/O\n");
 
     serve_init();
     fs_init();
     fs_test();
+
     serve();
 }

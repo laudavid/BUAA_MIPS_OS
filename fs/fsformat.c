@@ -120,7 +120,13 @@ void init_disk()
     }
     for (i = 0; i < nbitblock; ++i) {
         memset(disk[2 + i].data, 0xff, NBLOCK / 8);
+        //memset(disk[2+i].data, 0xff, BY2BLK);
     }
+    /*if (NBLOCK != nbitblock * BY2BLK) {
+        diff = NBLOCK % BY2BLK / 8;
+        memset(disk[2 + (nbitblock - 1)].data + diff, 0x00, BY2BLK - diff);
+    }*/
+
     if (NBLOCK != nbitblock * BIT2BLK) {
         diff = NBLOCK % BIT2BLK / 8;
         memset(disk[2 + (nbitblock - 1)].data + diff, 0x00, BY2BLK - diff);
@@ -195,13 +201,22 @@ int make_link_block(struct File *dirf, int nblk)
     return next_block(BLOCK_FILE);
 }
 
-// Create new block pointer for a file under sepcified directory.
+// Overview:
+//      Create new block pointer for a file under sepcified directory.
+//      Notice that when we delete a file, we do not re-arrenge all
+//      other file pointers, so we should be careful of existing empty
+//      file pointers
+//
+// Post-Condition:
+//      We ASSUM that this function will never fail
+
 struct File *create_file(struct File *dirf)
 {
     struct File *dirblk;
     int i, bno, found;
     int nblk = dirf->f_size / BY2BLK;
 
+    // Your code here
     if (nblk == 0) {
         // Empty directory.
         return (struct File *)(disk[make_link_block(dirf, 0)].data);
@@ -253,10 +268,16 @@ void write_file(struct File *dirf, const char *path)
     close(fd); // Close file descriptor.
 }
 
-// Write directory to disk under specified dir.
+// Overview:
+//      Write directory to disk under specified dir.
+//      Notice that we may use standard library functions to operate on
+//      directory to get file infomation.
+//
+// Post-Condition:
+//      We ASSUM that this funcion will never fail
 void write_directory(struct File *dirf, char *name)
 {
-    assert(0);
+    // Your code here
 }
 
 int main(int argc, char **argv)
@@ -265,7 +286,7 @@ int main(int argc, char **argv)
 
     init_disk();
 
-    if (argc < 3 || strcmp(argv[2], "-r") == 0 && argc != 4) {
+    if (argc < 3 || (strcmp(argv[2], "-r") == 0 && argc != 4)) {
         fprintf(stderr, "\
 Usage: fsformat gxemul/fs.img files...\n\
        fsformat gxemul/fs.img -r DIR\n");
