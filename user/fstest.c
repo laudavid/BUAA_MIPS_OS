@@ -57,6 +57,12 @@ void umain()
     }
 
     writef("file rewrite is good\n");
+
+    if ((r = remove("/newmotd")) < 0) {
+        user_panic("remove /newmotd: %d", r);
+    }
+    writef("file remove: OK\n");
+
     while (1) {
         //writef("IDLE!");
     }
