@@ -1,8 +1,8 @@
 #ifndef _USER_FD_H_
 #define _USER_FD_H_ 1
 
-#include <types.h>
 #include <fs.h>
+#include <types.h>
 
 // pre-declare for forward references
 struct Fd;
@@ -43,11 +43,9 @@ int fd_lookup(int fdnum, struct Fd **fd);
 u_int fd2data(struct Fd *);
 int fd2num(struct Fd *);
 int dev_lookup(int dev_id, struct Dev **dev);
-int
-num2fd(int fd);
+int num2fd(int fd);
 extern struct Dev devcons;
 extern struct Dev devfile;
 extern struct Dev devpipe;
-
 
 #endif

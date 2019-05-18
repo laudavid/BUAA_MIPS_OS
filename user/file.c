@@ -18,11 +18,11 @@ struct Dev devfile = {
 };
 
 // Overview:
-//	Open a file (or directory).
+//      Open a file (or directory).
 //
 // Returns:
-//	the file descriptor onsuccess,
-//	< 0 on failure.
+//      the file descriptor on success,
+//      < 0 on failure.
 int open(const char *path, int mode)
 {
     struct Fd *fd;
@@ -31,51 +31,46 @@ int open(const char *path, int mode)
     int r;
     u_int va;
     u_int i;
+
     // Step 1: Alloc a new Fd, return error code when fail to alloc.
     // Hint: Please use fd_alloc.
     if ((r = fd_alloc(&fd)) < 0) {
-        writef("alloc a fd in file_open failed.\n");
-        return r;
-    }
-    /*if((r=syscall_mem_alloc(0,fd,PTE_R|PTE_V|PTE_LIBRARY))<0){
-		writef("Sad Sad.\n");
-		return r;
-	}
-	if((r=syscall_mem_map(0,fd,0,fd,PTE_V|PTE_R|PTE_LIBRARY))<0){
-		writef("Sad.\n");
-		return r;
-	}*/
-    // Step 2: Get the file descriptor of the file to open.
-    if ((r = fsipc_open(path, mode, fd)) < 0) {
-        writef("can't get the fd.\n");
+        //writef("alloc a fd in file_open failed.\n");
         return r;
     }
 
+    // Step 2: Get the file descriptor of the file to open.
+    if ((r = fsipc_open(path, mode, fd)) < 0) {
+        //writef("can't get the fd.\n");
+        return r;
+    }
+    
     // Step 3: Set the start address storing the file's content. Set size and fileid correctly.
     // Hint: Use fd2data to get the start address.
     va = fd2data(fd);
     ffd = (struct Filefd *)fd;
     size = ffd->f_file.f_size;
     fileid = ffd->f_fileid;
+
     // Step 4: Map the file content into memory.
-    //一个磁盘块存储的文件大小是4KB--->BY2PG/BY2BLK
     for (i = 0; i < size; i += BY2BLK) {
         if ((r = syscall_mem_alloc(0, va + i, PTE_R | PTE_V)) < 0) {
-            writef("Sorry,you can't alloc a page.\n");
+            //writef("Sorry,you can't alloc a page.\n");
             return r;
         }
         if ((r = fsipc_map(fileid, i, va + i)) < 0) {
-            writef("Sorry,file open failed because failing map content.\n");
+            //writef("Sorry,file open failed because failing map content.\n");
             return r;
         }
     }
+
     // Step 5: Return file descriptor.
     // Hint: Use fd2num.
     return fd2num(fd);
 }
 
 // Overview:
-//	Close a file descriptor
+//      Close a file descriptor
 int file_close(struct Fd *fd)
 {
     int r;
@@ -115,9 +110,9 @@ int file_close(struct Fd *fd)
 }
 
 // Overview:
-//	Read 'n' bytes from 'fd' at the current seek position into 'buf'. Since files
-//	are memory-mapped, this amounts to a user_bcopy() surrounded by a little red
-//	tape to handle the file size and seek pointer.
+//      Read 'n' bytes from 'fd' at the current seek position into 'buf'. Since files
+//      are memory-mapped, this amounts to a user_bcopy() surrounded by a little red
+//      tape to handle the file size and seek pointer.
 static int
 file_read(struct Fd *fd, void *buf, u_int n, u_int offset)
 {
@@ -127,7 +122,7 @@ file_read(struct Fd *fd, void *buf, u_int n, u_int offset)
 
     // Avoid reading past the end of file.
     size = f->f_file.f_size;
-    //writef("size is:%d\n",size);
+
     if (offset > size) {
         return 0;
     }
@@ -135,14 +130,14 @@ file_read(struct Fd *fd, void *buf, u_int n, u_int offset)
     if (offset + n > size) {
         n = size - offset;
     }
-    //writef("now the offset is:%d\n",offset);
+
     user_bcopy((char *)fd2data(fd) + offset, buf, n);
     return n;
 }
 
 // Overview:
-//	Find the virtual address of the page that maps the file block
-//	starting at 'offset'.
+//      Find the virtual address of the page that maps the file block
+//      starting at 'offset'.
 int read_map(int fdnum, u_int offset, void **blk)
 {
     int r;
@@ -172,7 +167,7 @@ int read_map(int fdnum, u_int offset, void **blk)
 }
 
 // Overview:
-//	Write 'n' bytes from 'buf' to 'fd' at the current seek position.
+//      Write 'n' bytes from 'buf' to 'fd' at the current seek position.
 static int
 file_write(struct Fd *fd, const void *buf, u_int n, u_int offset)
 {
@@ -215,7 +210,7 @@ file_stat(struct Fd *fd, struct Stat *st)
 }
 
 // Overview:
-//	Truncate or extend an open file to 'size' bytes
+//      Truncate or extend an open file to 'size' bytes
 int ftruncate(int fdnum, u_int size)
 {
     int i, r;
@@ -234,15 +229,18 @@ int ftruncate(int fdnum, u_int size)
     if (fd->fd_dev_id != devfile.dev_id) {
         return -E_INVAL;
     }
+
     f = (struct Filefd *)fd;
     fileid = f->f_fileid;
     oldsize = f->f_file.f_size;
     f->f_file.f_size = size;
+
     if ((r = fsipc_set_size(fileid, size)) < 0) {
         return r;
     }
 
     va = fd2data(fd);
+
     // Map any new pages needed if extending the file
     for (i = ROUND(oldsize, BY2PG); i < ROUND(size, BY2PG); i += BY2PG) {
         if ((r = fsipc_map(fileid, i, va + i)) < 0) {
@@ -261,7 +259,7 @@ int ftruncate(int fdnum, u_int size)
 }
 
 // Overview:
-//	Delete a file/directory.
+//      Delete a file/directory.
 int remove(const char *path)
 {
     // Your code here.
@@ -269,7 +267,7 @@ int remove(const char *path)
 }
 
 // Overview:
-//	Synchronize disk with buffer cache
+//      Synchronize disk with buffer cache
 int sync(void)
 {
     return fsipc_sync();
