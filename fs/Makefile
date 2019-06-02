@@ -19,15 +19,26 @@ USERLIB := ../user/printf.o \
 		../user/pageref.o \
 		../user/file.o \
 		../user/fsipc.o \
+		../user/wait.o \
+		../user/spawn.o \
 		../user/pipe.o \
 		../user/console.o \
 		../user/fprintf.o
 
 FSLIB :=	fs.o \
 		ide.o \
+		ide_asm.o \
 		test.o
 
-FSIMGFILES := motd newmotd
+FSIMGFILES := 	motd \
+			newmotd \
+			../user/testfdsharing.b \
+			../user/testarg.b \
+			../user/init.b \
+			../user/sh.b \
+			../user/cat.b \
+			../user/ls.b
+
 
 CFLAGS += -nostdlib -static
 
@@ -40,7 +51,6 @@ all: serv.x fs.img serv.b
 %.b.c: %.b
 	echo create $@
 	echo bintoc $* $< > $@~
-	chmod +x ./bintoc
 	./bintoc $* $< > $@~ && mv -f $@~ $@
 #	grep \. $@
 	
@@ -55,7 +65,6 @@ all: serv.x fs.img serv.b
 %.o: %.S
 	echo as $<
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
-
 
 %.o: $(USERDIR)lib.h
 
