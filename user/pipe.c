@@ -1,32 +1,28 @@
 #include "lib.h"
 #include <mmu.h>
 #include <env.h>
-
 #define debug 0
 
 static int pipeclose(struct Fd *);
-
 static int piperead(struct Fd *fd, void *buf, u_int n, u_int offset);
-
 static int pipestat(struct Fd *, struct Stat *);
-
 static int pipewrite(struct Fd *fd, const void *buf, u_int n, u_int offset);
 
 struct Dev devpipe = {
-        .dev_id    = 'p',
-        .dev_name  = "pipe",
-        .dev_read  = piperead,
-        .dev_write = pipewrite,
-        .dev_close = pipeclose,
-        .dev_stat  = pipestat,
+    .dev_id =       'p',
+    .dev_name =     "pipe",
+    .dev_read =     piperead,
+    .dev_write =    pipewrite,
+    .dev_close =    pipeclose,
+    .dev_stat =     pipestat,
 };
 
-#define BY2PIPE 32        // small to provoke races
+#define BY2PIPE 32              // small to provoke races
 
 struct Pipe {
-    u_int p_rpos;            // read position
-    u_int p_wpos;            // write position
-    u_char p_buf[BY2PIPE];    // data buffer
+    u_int p_rpos;               // read position
+    u_int p_wpos;               // write position
+    u_char p_buf[BY2PIPE];  // data buffer
 };
 
 int
@@ -37,12 +33,12 @@ pipe(int pfd[2])
 
     /*Hint: Allocate the file descriptor table entries. */
     if ((r = fd_alloc(&fd0)) < 0
-        || (r = syscall_mem_alloc(0, (u_int)fd0, PTE_V | PTE_R | PTE_LIBRARY)) < 0) {
+            ||  (r = syscall_mem_alloc(0, (u_int)fd0, PTE_V | PTE_R | PTE_LIBRARY)) < 0) {
         goto err;
     }
 
     if ((r = fd_alloc(&fd1)) < 0
-        || (r = syscall_mem_alloc(0, (u_int)fd1, PTE_V | PTE_R | PTE_LIBRARY)) < 0) {
+            ||  (r = syscall_mem_alloc(0, (u_int)fd1, PTE_V | PTE_R | PTE_LIBRARY)) < 0) {
         goto err1;
     }
 
@@ -65,19 +61,19 @@ pipe(int pfd[2])
     fd1->fd_dev_id = devpipe.dev_id;
     fd1->fd_omode = O_WRONLY;
 
-    writef("[%08x] pipecreate \n", env->env_id, (*vpt)[VPN(va)]);
+    writef("[%08x] pipecreate \n", env->env_id, (* vpt)[VPN(va)]);
 
     pfd[0] = fd2num(fd0);
     pfd[1] = fd2num(fd1);
     return 0;
 
-    err3:
+err3:
     syscall_mem_unmap(0, va);
-    err2:
+err2:
     syscall_mem_unmap(0, (u_int)fd1);
-    err1:
+err1:
     syscall_mem_unmap(0, (u_int)fd0);
-    err:
+err:
     return r;
 }
 
@@ -98,8 +94,22 @@ _pipeisclosed(struct Fd *fd, struct Pipe *p)
     int pfd, pfp, runs;
 
     /*Step 1: Get reference of fd and p, and check if they are the same. */
+    do {
+        runs = env->env_runs;
+        pfd = pageref(fd);
+        pfp = pageref(p);
+    } while (runs != env->env_runs);
+
+    //pfp = pageref(p);
+    //pfd = pageref(fd);
+    //writef("pfd: %d pfp: %d\n", pfd, pfp);
 
     /*Step 2: If they are the same, return 1; otherwise return 0. */
+    if (pfd == pfp) {
+        return 1;
+    }
+
+    return 0;
 }
 
 int
@@ -125,7 +135,7 @@ pipeisclosed(int fdnum)
  *  instead of yielding.
  *  If the pipe is empty and closed and you didn't copy
  *  any data out, return 0.
- * 
+ *
  * Hints:
  *  You may use these functions:
  *      _pipeisclosed , fd2data
@@ -137,21 +147,42 @@ piperead(struct Fd *fd, void *vbuf, u_int n, u_int offset)
     struct Pipe *p;
     char *rbuf;
 
+    //writef("n = %d\n", n);
+    if (n == 0) {
+        return 0;
+    }
+
     /*Step 1: Get the pipe p according to fd. And vbuf is the reading buffer. */
+    p = (struct Pipe *)fd2data(fd);
+    rbuf = (char *)vbuf;
 
     /*Step 2: If pointer of reading is ahead of writing,then yield. */
-
+    while (p->p_rpos >= p->p_wpos) {
+        if (_pipeisclosed(fd, p)) {
+            //writef("read end because write end.\n");
+            return 0;
+        }
+        syscall_yield();
+    }
     /*Step 3: p_buf's size is BY2PIPE, and you should use it to fill rbuf. */
+    i = 0;
+    //writef("read start: i = %d\n", i);
+    while (i < n && p->p_rpos < p->p_wpos) {
+        *rbuf++ = p->p_buf[(p->p_rpos++) % BY2PIPE];
+        i++;
+    }
+
+    //writef("read end: i = %d\n", i);
     return i;
 }
 
 /* Overview:
- *  Write a loop that transfers one byte at a time.Unlik in 
- *  read, it is not okay to write only some of the data. 
- *  If the pipe fills and you've only copied some of the data, 
- *  wait for the pipe to empty and then keep copying. 
+ *  Write a loop that transfers one byte at a time.Unlik in
+ *  read, it is not okay to write only some of the data.
+ *  If the pipe fills and you've only copied some of the data,
+ *  wait for the pipe to empty and then keep copying.
  *  If the pipe is full and closed, return 0.
- *  
+ *
  * Hints:
  *  You may use these functions:
  *      _pipeisclosed , fd2data
@@ -163,11 +194,37 @@ pipewrite(struct Fd *fd, const void *vbuf, u_int n, u_int offset)
     struct Pipe *p;
     char *wbuf;
 
-    /*Step 1: Get the pipe p according to fd. And vbuf is the writing buffer. */
+    if (n == 0) {
+        return 0;
+    }
 
+    /*Step 1: Get the pipe p according to fd. And vbuf is the writing buffer. */
+    p = (struct Pipe *)fd2data(fd);
+    wbuf = (char *)vbuf;
     /*Step 2: If the difference between the pointer of writing and reading is larger than BY2PIPE, then yield. */
+    while ((p->p_wpos - p->p_rpos) >= BY2PIPE) {
+        if (_pipeisclosed(fd, p)) {
+            //writef("write end because read end.\n");
+            return 0;
+        }
+        syscall_yield();
+    }
 
     /*Step 3: p_buf's size is BY2PIPE, and you should use it to fill rbuf. */
+    i = 0;
+    while (i < n) {
+        p->p_buf[(p->p_wpos++) % BY2PIPE] = *wbuf++;
+        i++;
+        while ((p->p_wpos - p->p_rpos) >= BY2PIPE) {
+            if (_pipeisclosed(fd, p)) {
+                //writef("write end because read end.\n");
+                //writef("p_wpos: %d p_rpos%d\n", p->p_wpos, p->p_rpos);
+                return 0;
+            }
+            syscall_yield();
+        }
+    }
+
     return n;
 }
 
@@ -187,7 +244,7 @@ pipestat(struct Fd *fd, struct Stat *stat)
 static int
 pipeclose(struct Fd *fd)
 {
+    syscall_mem_unmap(0, (u_int)fd);
     syscall_mem_unmap(0, fd2data(fd));
     return 0;
 }
-
