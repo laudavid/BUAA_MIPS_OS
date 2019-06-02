@@ -1,3 +1,4 @@
+#!/bin/bash
 make clean
-make 
+make
 gxemul -E oldtestmips -C R3000 -M 64 -d gxemul/fs.img gxemul/vmlinux

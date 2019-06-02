@@ -27,7 +27,6 @@ USERLIB := ../user/printf.o \
 
 FSLIB :=	fs.o \
 		ide.o \
-		ide_asm.o \
 		test.o
 
 FSIMGFILES := 	motd \
@@ -76,6 +75,6 @@ fs.img: $(FSIMGFILES)
 .PHONY: clean
 
 clean:
-	rm -rf *~ *.o *.b.c *.x
+	rm -rf *~ *.o *.b.c *.b *.x fsformat
 
 include ../include.mk

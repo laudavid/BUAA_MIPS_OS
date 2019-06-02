@@ -5,54 +5,67 @@
 int
 strlen(const char *s)
 {
-	int n;
+    int n;
 
-	for (n=0; *s; s++)
-		n++;
-	return n;
+    for (n = 0; *s; s++) {
+        n++;
+    }
+
+    return n;
 }
 
-char*
+char *
 strcpy(char *dst, const char *src)
 {
-	char *ret;
+    char *ret;
 
-	ret = dst;
-	while ((*dst++ = *src++) != 0)
-		;
-	return ret;
+    ret = dst;
+
+    while ((*dst++ = *src++) != 0);
+
+    return ret;
 }
 
-const char*
+const char *
 strchr(const char *s, char c)
 {
-	for(; *s; s++)
-		if(*s == c)
-			return s;
-	return 0;
+    for (; *s; s++)
+        if (*s == c) {
+            return s;
+        }
+
+    return 0;
 }
 
 void *
-memcpy(void *destaddr,void const *srcaddr,u_int len)
+memcpy(void *destaddr, void const *srcaddr, u_int len)
 {
-	char *dest = destaddr;
-	char const *src = srcaddr;
+    char *dest = destaddr;
+    char const *src = srcaddr;
 
-	while(len-->0)
-		*dest++=*src++;
-	return destaddr;
+    while (len-- > 0) {
+        *dest++ = *src++;
+    }
+
+    return destaddr;
 }
 
 
 int
 strcmp(const char *p, const char *q)
 {
-	while (*p && *p == *q)
-		p++, q++;
-	if ((u_int)*p < (u_int)*q)
-		return -1;
-	if ((u_int)*p > (u_int)*q)
-		return 1;
-	return 0;
+    while (*p && *p == *q) {
+        p++, q++;
+    }
+
+    if ((u_int) * p < (u_int) * q) {
+        return -1;
+    }
+
+    if ((u_int) * p > (u_int) * q) {
+        return 1;
+    }
+
+    return 0;
 }
 

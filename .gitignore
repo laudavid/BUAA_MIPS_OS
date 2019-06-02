@@ -1,5 +1,11 @@
-*~
 *.o
-vmlinux
-*.x
 *.b
+*.x
+*~
+*.swp
+vmlinux
+fsformat
+fs.img
+.idea
+.vscode
+CMakeLists.txt
